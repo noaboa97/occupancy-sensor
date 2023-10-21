@@ -82,8 +82,9 @@ void loop()
       firstirReadingright = 1;
     }
   }
-  else
+  else // isReadingright == HIGH
   {
+    // Turn off the LED
     digitalWrite(ledPinleft, LOW);
   }
 
