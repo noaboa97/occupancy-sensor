@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip
 
 // USB-C Port facing towards you for left / right 
 
@@ -27,6 +28,14 @@ unsigned long currentTime = 0;
 unsigned int intervalDelay = 1000;
 unsigned int sensorTriggerDelay = 1000;
 
+int roomCountLeft = 0;
+int roomCountRight = 0;
+
+TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
+
+
+
+
 
 void setup()
 {
@@ -38,6 +47,14 @@ void setup()
   pinMode(irSensorright, INPUT);
   pinMode(ledPinleft, OUTPUT);
   pinMode(ledPinright, OUTPUT);
+
+  tft.begin();               // Initialise the display
+  tft.fillScreen(TFT_BLACK); // Black screen fill
+  tft.setRotation(1);
+
+  // tft.drawString("------------------------------",0,60);
+  tft.drawLine(0, 70, 240, 70, TFT_WHITE);
+  tft.setTextSize(5);
 }
 void loop()
 {
@@ -48,8 +65,7 @@ void loop()
   // If IR sensor detects motion
   if (irReadingright == LOW)
   {
-    // Turn on the LED
-    digitalWrite(ledPinright, HIGH);
+
 
     // Capture time of the right IR Sensor when it was triggered
     currentTimeright = millis();
@@ -70,8 +86,7 @@ void loop()
   // If IR sensor detects motion
   if (irReadingleft == LOW)
   {
-    // Turn on the LED
-    digitalWrite(ledPinleft, HIGH);
+
 
     // Capture time of the right IR Sensor when it was triggered
     currentTimeleft = millis();
@@ -98,14 +113,38 @@ void loop()
     if(lastReadTimeleft > lastReadTimeright && lastReadTimeright + sensorTriggerDelay > lastReadTimeleft)
     {
       // Person walked left
-      Serial.println("Links");
+      Serial.println("Left");
+      roomCountLeft++;
+      //tft.drawString(roomCountLeft,60,120);
+      tft.drawNumber(roomCountLeft,120,90);
+
+      // Turn on the LED
+      digitalWrite(ledPinleft, HIGH);
+
+      if (roomCountRight > 0)
+      {
+        roomCountRight--;
+        tft.drawNumber(roomCountRight,120,25);
+      }
 
     }
     // Right sensor was triggered last and the right sensor was triggered X ms after the left
     else if (lastReadTimeleft < lastReadTimeright && lastReadTimeleft + sensorTriggerDelay > lastReadTimeright)
     {
       // Person walked right
-      Serial.println("Rechts");
+      Serial.println("Right");
+      roomCountRight++;
+      //tft.drawString();
+      tft.drawNumber(roomCountRight,120,25);
+      // Turn on the LED
+      digitalWrite(ledPinright, HIGH);
+
+
+      if (roomCountLeft > 0)
+      {
+        roomCountLeft--;
+        tft.drawNumber(roomCountLeft,120,90);
+      }
 
     }
 
